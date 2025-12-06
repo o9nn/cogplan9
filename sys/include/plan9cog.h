@@ -18,9 +18,9 @@
 #pragma lib "libplan9cog.a"
 
 /* Core cognitive components */
-#include "atomspace.h"		/* Hypergraph knowledge representation */
-#include "pln.h"		/* Probabilistic Logic Networks */
-#include "cogvm.h"		/* Cognitive VM extensions */
+#include <plan9cog/atomspace.h>		/* Hypergraph knowledge representation */
+#include <plan9cog/pln.h>		/* Probabilistic Logic Networks */
+#include <plan9cog/cogvm.h>		/* Cognitive VM extensions */
 
 /* Plan9Cog System */
 typedef struct Plan9Cog Plan9Cog;

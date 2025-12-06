@@ -1,3 +1,5 @@
+</$objtype/mkfile
+
 LIB=libpln.a
 OFILES=\
 	pln.$O\

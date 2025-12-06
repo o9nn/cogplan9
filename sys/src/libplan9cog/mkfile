@@ -1,3 +1,5 @@
+</$objtype/mkfile
+
 LIB=libplan9cog.a
 OFILES=\
 	plan9cog.$O\

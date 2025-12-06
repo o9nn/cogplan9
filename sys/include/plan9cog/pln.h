@@ -11,7 +11,7 @@ typedef struct PlnRule PlnRule;
 typedef struct PlnFormula PlnFormula;
 typedef struct PlnInference PlnInference;
 
-#include "atomspace.h"
+#include <plan9cog/atomspace.h>
 
 /* PLN Formula Types */
 enum {

@@ -1,3 +1,5 @@
+</$objtype/mkfile
+
 LIB=libatomspace.a
 OFILES=\
 	atomspace.$O\
