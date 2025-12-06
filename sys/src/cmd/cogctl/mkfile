@@ -1,0 +1,10 @@
+</$objtype/mkfile
+
+TARG=cogctl
+OFILES=\
+	cogctl.$O\
+
+HFILES=/sys/include/plan9cog.h
+
+BIN=/$objtype/bin
+

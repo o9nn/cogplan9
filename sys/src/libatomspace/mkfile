@@ -1,0 +1,8 @@
+LIB=libatomspace.a
+OFILES=\
+	atomspace.$O\
+	pattern.$O\
+	serialize.$O\
+
+HFILES=/sys/include/plan9cog/atomspace.h
+
