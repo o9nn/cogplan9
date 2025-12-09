@@ -1,0 +1,10 @@
+</$objtype/mkfile
+
+TARG=cogfs
+OFILES=\
+	cogfs.$O\
+
+HFILES=/sys/include/plan9cog.h
+
+BIN=/$objtype/bin
+

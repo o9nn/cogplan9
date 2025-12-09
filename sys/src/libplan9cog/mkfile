@@ -1,0 +1,11 @@
+</$objtype/mkfile
+
+LIB=libplan9cog.a
+OFILES=\
+	plan9cog.$O\
+	ecan.$O\
+	machspace.$O\
+	reactor.$O\
+
+HFILES=/sys/include/plan9cog.h
+

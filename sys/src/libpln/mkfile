@@ -1,0 +1,9 @@
+</$objtype/mkfile
+
+LIB=libpln.a
+OFILES=\
+	pln.$O\
+	ure.$O\
+
+HFILES=/sys/include/plan9cog/pln.h /sys/include/plan9cog/atomspace.h
+
