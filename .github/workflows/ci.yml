@@ -19,22 +19,32 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
+      - name: Cache Plan 9 from User Space
+        uses: actions/cache@v4
+        id: cache-plan9port
+        with:
+          path: /usr/local/plan9
+          key: plan9port-${{ runner.os }}-v1
+      
       - name: Set up Plan 9 from User Space
+        if: steps.cache-plan9port.outputs.cache-hit != 'true'
         run: |
           echo "Installing Plan 9 from User Space (plan9port)..."
           cd /usr/local
           sudo git clone https://github.com/9fans/plan9port plan9
           cd plan9
           sudo ./INSTALL
-          
+      
+      - name: Configure environment
+        run: |
           # Set up environment
           echo "PLAN9=/usr/local/plan9" >> $GITHUB_ENV
           echo "/usr/local/plan9/bin" >> $GITHUB_PATH
           
           # Verify installation
           echo "Verifying Plan 9 tools..."
-          which mk
-          which 9c
+          which mk || echo "mk not found"
+          which 9c || echo "9c not found"
           mk --version || echo "mk installed"
       
       - name: Run integration tests
