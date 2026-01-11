@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plan9Cog - Run Plan 9 in Your Browser</title>
+    <meta name="description" content="Plan9Cog: A browser-based Plan 9 virtual machine with cognitive computing extensions. Run Plan 9 directly in your web browser.">
+    
+    <!-- Open Graph / Social -->
+    <meta property="og:title" content="Plan9Cog - Plan 9 in Your Browser">
+    <meta property="og:description" content="Run Plan 9 with cognitive computing extensions directly in your web browser using WebAssembly.">
+    <meta property="og:type" content="website">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+    
+    <style>
+        :root {
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-tertiary: #0f3460;
+            --accent: #e94560;
+            --accent-light: #ff6b6b;
+            --text-primary: #eee;
+            --text-secondary: #aaa;
+            --border: #333;
+            --success: #4ade80;
+            --warning: #fbbf24;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        header {
+            background: var(--bg-secondary);
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .logo svg {
+            width: 40px;
+            height: 40px;
+        }
+        
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .logo span {
+            color: var(--accent);
+        }
+        
+        .header-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+        
+        .header-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+        
+        .header-links a:hover {
+            color: var(--accent-light);
+        }
+        
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+            gap: 1rem;
+        }
+        
+        .vm-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+        
+        .vm-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .vm-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+        }
+        
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--text-secondary);
+        }
+        
+        .status-indicator.running {
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+        
+        .status-indicator.loading {
+            background: var(--warning);
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .vm-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .vm-controls button {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--accent-light);
+        }
+        
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border) !important;
+        }
+        
+        .btn-secondary:hover {
+            background: var(--bg-primary);
+        }
+        
+        .btn-primary:disabled, .btn-secondary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        #screen_container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #000;
+            min-height: 400px;
+            position: relative;
+        }
+        
+        #screen_container canvas {
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+        
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.9);
+            gap: 1rem;
+        }
+        
+        .loading-overlay.hidden {
+            display: none;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .progress-bar {
+            width: 300px;
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--accent);
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        .info-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+        
+        .info-card {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 1.25rem;
+            border: 1px solid var(--border);
+        }
+        
+        .info-card h3 {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .info-card p {
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        
+        .info-card code {
+            background: var(--bg-primary);
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.85rem;
+        }
+        
+        .keyboard-hint {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .key {
+            background: var(--bg-primary);
+            padding: 0.25rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.8rem;
+            border: 1px solid var(--border);
+        }
+        
+        footer {
+            background: var(--bg-secondary);
+            padding: 1rem 2rem;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        
+        footer a {
+            color: var(--accent-light);
+            text-decoration: none;
+        }
+        
+        footer a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Fullscreen mode */
+        .fullscreen #screen_container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1000;
+            min-height: 100vh;
+        }
+        
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .header-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .vm-toolbar {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="50" cy="50" r="45" stroke="#e94560" stroke-width="4"/>
+                <path d="M30 35 L50 25 L70 35 L70 65 L50 75 L30 65 Z" stroke="#e94560" stroke-width="3" fill="none"/>
+                <circle cx="50" cy="50" r="10" fill="#e94560"/>
+                <line x1="50" y1="40" x2="50" y2="25" stroke="#e94560" stroke-width="2"/>
+                <line x1="58" y1="55" x2="70" y2="65" stroke="#e94560" stroke-width="2"/>
+                <line x1="42" y1="55" x2="30" y2="65" stroke="#e94560" stroke-width="2"/>
+            </svg>
+            <h1>Plan9<span>Cog</span></h1>
+        </div>
+        <nav class="header-links">
+            <a href="https://github.com/cogpy/cogplan9" target="_blank">GitHub</a>
+            <a href="https://github.com/cogpy/cogplan9/blob/main/PLAN9COG_README.md" target="_blank">Documentation</a>
+            <a href="https://github.com/cogpy/cogplan9/blob/main/ARCHITECTURE.md" target="_blank">Architecture</a>
+            <a href="https://9front.org/" target="_blank">9front</a>
+        </nav>
+    </header>
+    
+    <main>
+        <div class="vm-container">
+            <div class="vm-toolbar">
+                <div class="vm-status">
+                    <div class="status-indicator" id="status-indicator"></div>
+                    <span id="status-text">Ready to start</span>
+                </div>
+                <div class="vm-controls">
+                    <button class="btn-primary" id="btn-start">Start VM</button>
+                    <button class="btn-secondary" id="btn-stop" disabled>Stop</button>
+                    <button class="btn-secondary" id="btn-reset" disabled>Reset</button>
+                    <button class="btn-secondary" id="btn-fullscreen">Fullscreen</button>
+                </div>
+            </div>
+            
+            <div id="screen_container">
+                <div class="loading-overlay" id="loading-overlay">
+                    <div class="spinner"></div>
+                    <p id="loading-text">Click "Start VM" to boot Plan 9</p>
+                    <div class="progress-bar" id="progress-bar" style="display: none;">
+                        <div class="progress-bar-fill" id="progress-fill"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="info-panel">
+            <div class="info-card">
+                <h3>About Plan9Cog</h3>
+                <p>
+                    Plan9Cog integrates cognitive computing capabilities into the Plan 9 operating system.
+                    This browser-based VM runs 9front with Plan9Cog extensions using the v86 emulator.
+                </p>
+            </div>
+            
+            <div class="info-card">
+                <h3>Keyboard Shortcuts</h3>
+                <p>Plan 9 uses a 3-button mouse. In the browser:</p>
+                <div class="keyboard-hint">
+                    <span class="key">Left Click</span>
+                    <span class="key">Middle Click</span>
+                    <span class="key">Right Click</span>
+                </div>
+                <p style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-secondary);">
+                    Use <code>Ctrl+Alt</code> to release mouse capture
+                </p>
+            </div>
+            
+            <div class="info-card">
+                <h3>System Info</h3>
+                <p>
+                    <strong>OS:</strong> 9front (Plan 9 fork)<br>
+                    <strong>Memory:</strong> 512 MB<br>
+                    <strong>Emulator:</strong> v86 (WebAssembly)
+                </p>
+            </div>
+            
+            <div class="info-card">
+                <h3>Getting Started</h3>
+                <p>
+                    After boot, you'll see the rio window manager. Right-click for the menu.
+                    Type <code>rc</code> to open a shell. See the 
+                    <a href="https://9front.org/fqa/" target="_blank">9front FQA</a> for help.
+                </p>
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        <p>
+            Plan9Cog is open source. 
+            <a href="https://github.com/cogpy/cogplan9">View on GitHub</a> | 
+            Powered by <a href="https://github.com/copy/v86">v86</a> |
+            Based on <a href="https://9front.org/">9front</a>
+        </p>
+    </footer>
+    
+    <!-- v86 Library -->
+    <script src="https://cdn.jsdelivr.net/gh/nicholasadamou/v86@latest/build/libv86.js"></script>
+    
+    <script>
+        // DOM Elements
+        const screenContainer = document.getElementById('screen_container');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const loadingText = document.getElementById('loading-text');
+        const progressBar = document.getElementById('progress-bar');
+        const progressFill = document.getElementById('progress-fill');
+        const statusIndicator = document.getElementById('status-indicator');
+        const statusText = document.getElementById('status-text');
+        const btnStart = document.getElementById('btn-start');
+        const btnStop = document.getElementById('btn-stop');
+        const btnReset = document.getElementById('btn-reset');
+        const btnFullscreen = document.getElementById('btn-fullscreen');
+        
+        let emulator = null;
+        
+        // Configuration
+        const VM_CONFIG = {
+            wasm_path: "https://cdn.jsdelivr.net/gh/nicholasadamou/v86@latest/build/v86.wasm",
+            memory_size: 512 * 1024 * 1024, // 512 MB
+            vga_memory_size: 8 * 1024 * 1024, // 8 MB
+            screen_container: screenContainer,
+            bios: {
+                url: "https://cdn.jsdelivr.net/gh/nicholasadamou/v86@latest/bios/seabios.bin",
+            },
+            vga_bios: {
+                url: "https://cdn.jsdelivr.net/gh/nicholasadamou/v86@latest/bios/vgabios.bin",
+            },
+            // 9front disk image - using the public v86 hosted image
+            hda: {
+                url: "https://i.copy.sh/9front-10522.iso.zst",
+                async: true,
+                size: 700 * 1024 * 1024,
+            },
+            autostart: false,
+            disable_keyboard: false,
+            disable_mouse: false,
+        };
+        
+        function setStatus(status, text) {
+            statusIndicator.className = 'status-indicator ' + status;
+            statusText.textContent = text;
+        }
+        
+        function updateProgress(loaded, total) {
+            if (total > 0) {
+                const percent = Math.round((loaded / total) * 100);
+                progressFill.style.width = percent + '%';
+                loadingText.textContent = `Loading... ${percent}%`;
+            }
+        }
+        
+        async function startVM() {
+            try {
+                btnStart.disabled = true;
+                setStatus('loading', 'Initializing...');
+                loadingText.textContent = 'Loading VM components...';
+                progressBar.style.display = 'block';
+                
+                emulator = new V86(VM_CONFIG);
+                
+                emulator.add_listener("emulator-ready", function() {
+                    console.log("Emulator ready");
+                    loadingOverlay.classList.add('hidden');
+                    setStatus('running', 'Running');
+                    btnStop.disabled = false;
+                    btnReset.disabled = false;
+                });
+                
+                emulator.add_listener("download-progress", function(e) {
+                    updateProgress(e.loaded, e.total);
+                });
+                
+                emulator.add_listener("download-error", function(e) {
+                    console.error("Download error:", e);
+                    setStatus('', 'Download failed');
+                    loadingText.textContent = 'Failed to load disk image. Please try again.';
+                    btnStart.disabled = false;
+                });
+                
+                // Start the emulator
+                emulator.run();
+                
+            } catch (error) {
+                console.error("Failed to start VM:", error);
+                setStatus('', 'Error');
+                loadingText.textContent = 'Failed to start VM: ' + error.message;
+                btnStart.disabled = false;
+            }
+        }
+        
+        function stopVM() {
+            if (emulator) {
+                emulator.stop();
+                emulator = null;
+                setStatus('', 'Stopped');
+                loadingOverlay.classList.remove('hidden');
+                loadingText.textContent = 'VM stopped. Click "Start VM" to boot again.';
+                progressBar.style.display = 'none';
+                btnStart.disabled = false;
+                btnStop.disabled = true;
+                btnReset.disabled = true;
+            }
+        }
+        
+        function resetVM() {
+            if (emulator) {
+                emulator.restart();
+                setStatus('loading', 'Restarting...');
+            }
+        }
+        
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                screenContainer.requestFullscreen().catch(err => {
+                    console.log("Fullscreen error:", err);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+        
+        // Event listeners
+        btnStart.addEventListener('click', startVM);
+        btnStop.addEventListener('click', stopVM);
+        btnReset.addEventListener('click', resetVM);
+        btnFullscreen.addEventListener('click', toggleFullscreen);
+        
+        // Handle fullscreen changes
+        document.addEventListener('fullscreenchange', () => {
+            document.body.classList.toggle('fullscreen', !!document.fullscreenElement);
+        });
+    </script>
+</body>
+</html>
