@@ -678,6 +678,24 @@ newproc(void)
 	p->lastupdate = MACHP(0)->ticks*Scaling;
 	p->edf = nil;
 
+	/*
+	 * Cognitive kernel extensions
+	 * Allocate cognitive process extension for each new process
+	 */
+	p->cogext = cogprocalloc();
+	if(p->cogext != nil){
+		p->cogext->atomid = 0;
+		p->cogext->sti = 0;
+		p->cogext->lti = 0;
+		p->cogext->vlti = 0;
+		p->cogext->inferences = 0;
+		p->cogext->patterns = 0;
+		p->cogext->cogstate = CogIdle;
+		p->cogext->cogpri = 0;
+		p->cogext->cogcycles = 0;
+	}
+	p->atomid = 0;
+
 	return p;
 }
 
@@ -1075,6 +1093,16 @@ pexit(char *exitstr, int freemem)
 	up->alarm = 0;
 	if (up->tt)
 		timerdel(up);
+
+	/*
+	 * Free cognitive process extension
+	 */
+	if(up->cogext != nil){
+		cogprocextfree(up->cogext);
+		up->cogext = nil;
+	}
+	up->atomid = 0;
+
 	pt = proctrace;
 	if(pt)
 		pt(up, SDead, 0);

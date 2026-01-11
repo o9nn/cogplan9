@@ -151,6 +151,19 @@ main(void)
 		arch->clockenable();
 	procinit0();
 	initseg();
+
+	/*
+	 * Cognitive kernel initialization
+	 * Initialize cognitive computing subsystems before devices
+	 */
+	cogmeminit();		/* Cognitive memory management */
+	cogprocinit();		/* Cognitive process extensions */
+	cogvminit();		/* Cognitive Virtual Machine */
+	cogatomspaceinit();	/* Kernel AtomSpace */
+	cogplninit();		/* PLN inference engine */
+	cogecaninit();		/* ECAN attention allocation */
+	print("cognitive kernel initialized\n");
+
 	if(delaylink){
 		bootlinks();
 		pcimatch(0, 0, 0);
@@ -246,6 +259,7 @@ init0(void)
 		poperror();
 	}
 	kproc("alarm", alarmkproc, 0);
+	kproc("cogdecay", cogdecayproc, 0);	/* Cognitive attention decay */
 	cgapost(0x9);
 	touser(sp);
 }
