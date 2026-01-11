@@ -438,7 +438,7 @@
     </footer>
     
     <!-- v86 Library -->
-    <script src="https://cdn.jsdelivr.net/gh/nicholasadamou/v86@latest/build/libv86.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/v86@latest/build/libv86.js"></script>
     
     <script>
         // DOM Elements
@@ -458,15 +458,15 @@
         
         // Configuration
         const VM_CONFIG = {
-            wasm_path: "https://cdn.jsdelivr.net/gh/nicholasadamou/v86@latest/build/v86.wasm",
+            wasm_path: "https://cdn.jsdelivr.net/npm/v86@latest/build/v86.wasm",
             memory_size: 512 * 1024 * 1024, // 512 MB
             vga_memory_size: 8 * 1024 * 1024, // 8 MB
             screen_container: screenContainer,
             bios: {
-                url: "https://cdn.jsdelivr.net/gh/nicholasadamou/v86@latest/bios/seabios.bin",
+                url: "https://cdn.jsdelivr.net/gh/copy/v86@master/bios/seabios.bin",
             },
             vga_bios: {
-                url: "https://cdn.jsdelivr.net/gh/nicholasadamou/v86@latest/bios/vgabios.bin",
+                url: "https://cdn.jsdelivr.net/gh/copy/v86@master/bios/vgabios.bin",
             },
             // 9front disk image - using the public v86 hosted image
             hda: {
