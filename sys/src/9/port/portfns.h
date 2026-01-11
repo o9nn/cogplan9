@@ -397,6 +397,99 @@ void		_xinc(long*);
 long		_xdec(long*);
 long		lcycles(void);
 
+/*
+ * Cognitive Kernel Functions
+ * These functions provide cognitive computing capabilities
+ * as fundamental kernel services.
+ */
+
+/* Cognitive VM */
+void		cogvminit(void);
+CogProc*	cogproccreate(Proc*);
+void		cogprocfree(CogProc*);
+int		cogvmrun(CogProc*);
+int		cogvmstep(CogProc*);
+CogProc*	cogschedule(void);
+void		cogallocate(CogProc*, short, short);
+void		cogdecay(float);
+void		cogvmstats(ulong*, ulong*, int*);
+
+/* Cognitive Process Management */
+void		cogprocinit(void);
+CogProcExt*	cogprocalloc(void);
+void		cogprocextfree(CogProcExt*);
+int		cogpriority(CogProcExt*);
+int		cogtimeslice(CogProcExt*);
+void		cogthink(CogProcExt*);
+void		coginfer(CogProcExt*);
+void		coglearn(CogProcExt*);
+void		cogupdate(CogProcExt*, short, short);
+void		cogdecayprocs(void);
+void		cogdecayproc(void*);
+
+/* Cognitive Memory Management */
+void		cogmeminit(void);
+void*		cogalloc(ulong, int, short, short);
+void		cogfree(void*);
+void		cogmemupdate(void*, short, short);
+int		cogreclaim(ulong);
+void		cogmemdecay(void);
+void		cogmemstats(ulong*, ulong*, int*);
+void*		cogallocatom(ulong, short);
+void*		cogalloclink(ulong, short);
+int		coggc(void);
+
+/* Kernel AtomSpace */
+void		cogatomspaceinit(void);
+CogAtomSpace*	cogatomspace(void);
+CogAtom*	cogcreate(int, char*);
+CogAtom*	coglink(int, CogAtom**, int);
+CogAtom*	cogfind(ulong);
+CogAtom*	cogfindname(char*);
+void		cogdelete(CogAtom*);
+int		cogquery(int, CogAtom**, int);
+
+/* PLN Inference */
+void		cogplninit(void);
+int		cogplninfer(int, CogAtom**, int, CogAtom**);
+float		cogplndeduction(CogAtom*, CogAtom*);
+float		cogplninduction(CogAtom*, CogAtom*);
+float		cogplnrevision(float, float, float, float);
+
+/* ECAN Attention */
+void		cogecaninit(void);
+void		cogecanupdate(void);
+void		cogecanspread(CogAtom*, short);
+void		cogecandecay(float);
+CogAtom**	cogecanfocus(int*);
+void		cogecanstimulate(CogAtom*, short);
+
+/* Cognitive System Calls */
+int		syscogthink(int, int, int, void*);
+int		syscogwait(void);
+int		syscoginfer(int, ulong*, int);
+int		syscogfocus(ulong);
+int		syscogspread(ulong, short);
+
+/* Tensor Logic Functions */
+void		cogtensorinit(void);
+Tensor*		cogtensornew(int, int, int*);
+void		cogtensordel(Tensor*);
+float		cogtensorgetf(Tensor*, int*);
+void		cogtensorsetf(Tensor*, int*, float);
+Tensor*		tensoreinsum(char*, Tensor**, int);
+float		tensortv(Tensor*, Tensor*);
+Tensor*		tensorembed(char*);
+Tensor*		tensorimply(Tensor*, Tensor*);
+float		tensordeduction(Tensor*, Tensor*);
+void		tensorsoftmax(Tensor*);
+Tensor*		tensorattention(Tensor*, Tensor*, Tensor*);
+void		tensor2tv(Tensor*, float*, float*);
+void		cogtensorstats(int*, int*, ulong*);
+
+/* Cognitive Unit Tests */
+void		runcognitvetests(void);
+
 #pragma varargck argpos iprint	1
 #pragma	varargck argpos	panic	1
 #pragma varargck argpos pprint	1

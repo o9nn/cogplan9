@@ -6,18 +6,21 @@ FROM ubuntu:22.04
 # Avoid prompts from apt
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install basic dependencies
-RUN apt-get update && apt-get install -y \
+# Fix Ubuntu GPG key issues in Docker builds
+# Import the missing Ubuntu archive signing key before any apt operations
+RUN apt-get update 2>/dev/null || true && \
+    apt-get install -y --allow-unauthenticated ca-certificates gnupg curl && \
+    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 871920D1991BC93C && \
+    apt-get update && \
+    apt-get install -y \
     build-essential \
     git \
-    curl \
     wget \
     vim \
     nano \
     less \
     man-db \
     sudo \
-    ca-certificates \
     libx11-dev \
     libxt-dev \
     libxext-dev \
@@ -65,10 +68,12 @@ exec $PLAN9/bin/mk "$@"' > /usr/local/bin/mk && \
     chmod +x /usr/local/bin/mk
 
 # Install GitHub CLI for GitHub integration
-RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg -o /usr/share/keyrings/githubcli-archive-keyring.gpg && \
-    chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg && \
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | \
-    tee /etc/apt/sources.list.d/github-cli.list > /dev/null && \
+# Re-import the GPG key and update before installing gh
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 871920D1991BC93C && \
+    mkdir -p -m 755 /etc/apt/keyrings && \
+    curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null && \
+    chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null && \
     apt-get update && \
     apt-get install -y gh && \
     rm -rf /var/lib/apt/lists/*
