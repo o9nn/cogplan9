@@ -457,11 +457,11 @@
         let emulator = null;
         
         // Configuration
-        // Note: Using Buildroot Linux as a lightweight demo while 9front image is being prepared
+        // Note: Using Buildroot Linux ISO as a demo while 9front image is being prepared
         // The full 9front image will be available in a future release
         const VM_CONFIG = {
             wasm_path: "https://cdn.jsdelivr.net/npm/v86@latest/build/v86.wasm",
-            memory_size: 128 * 1024 * 1024, // 128 MB for Buildroot
+            memory_size: 128 * 1024 * 1024, // 128 MB
             vga_memory_size: 8 * 1024 * 1024, // 8 MB
             screen_container: screenContainer,
             bios: {
@@ -470,12 +470,12 @@
             vga_bios: {
                 url: "https://cdn.jsdelivr.net/gh/copy/v86@master/bios/vgabios.bin",
             },
-            // Using Buildroot Linux bzImage for demo
+            // Using Buildroot Linux ISO from v86 images repo (~5.4 MB)
             // 9front disk image will be added when self-hosted
-            bzimage: {
-                url: "https://static.simonwillison.net/static/cors-allow/2026/buildroot-bzimage68.bin",
+            cdrom: {
+                url: "https://cdn.jsdelivr.net/gh/copy/images@master/linux.iso",
             },
-            autostart: false,
+            autostart: true,
             disable_keyboard: false,
             disable_mouse: false,
         };
