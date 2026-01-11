@@ -51,6 +51,13 @@ typedef struct Watchdog	Watchdog;
 typedef struct Watermark	Watermark;
 typedef int    Devgen(Chan*, char*, Dirtab*, int, int, Dir*);
 
+/* Cognitive kernel extensions */
+typedef struct CogProcExt CogProcExt;
+typedef struct CogMemBlock CogMemBlock;
+typedef struct CogProc CogProc;
+typedef struct CogAtom CogAtom;
+typedef struct CogAtomSpace CogAtomSpace;
+
 #pragma incomplete DevConf
 #pragma incomplete Edf
 #pragma incomplete Mntcache
@@ -785,6 +792,12 @@ struct Proc
 	Notsave;
 
 	/*
+	 *  Cognitive kernel extensions
+	 */
+	CogProcExt	*cogext;	/* Cognitive process extension */
+	ulong		atomid;		/* Process's atom ID in kernel AtomSpace */
+
+	/*
 	 *  machine specific MMU
 	 */
 	PMMU;
@@ -1022,3 +1035,128 @@ enum
 #pragma	varargck	type	"V"	uchar*
 #pragma	varargck	type	"E"	uchar*
 #pragma	varargck	type	"M"	uchar*
+
+/*
+ * Cognitive Kernel Structures
+ * These structures support the cognitive computing extensions
+ * that make intelligence a fundamental kernel service.
+ */
+
+/* Cognitive process states */
+enum
+{
+	CogIdle = 0,		/* Cognitive process idle */
+	CogThinking,		/* Active cognitive processing */
+	CogInferring,		/* Performing inference */
+	CogLearning,		/* Learning mode */
+	CogWaiting,		/* Waiting for cognitive resource */
+};
+
+/* Cognitive memory types */
+enum
+{
+	CogMemGeneral = 0,	/* General cognitive memory */
+	CogMemAtom,		/* Atom storage */
+	CogMemLink,		/* Link storage */
+	CogMemPattern,		/* Pattern cache */
+	CogMemAttention,	/* Attention allocation */
+	CogMemInference,	/* Inference workspace */
+};
+
+/* Cognitive process extension */
+struct CogProcExt
+{
+	ulong	atomid;		/* Process's atom in AtomSpace */
+	short	sti;		/* Short-term importance */
+	short	lti;		/* Long-term importance */
+	short	vlti;		/* Very long-term importance */
+	ulong	inferences;	/* Inference count */
+	ulong	patterns;	/* Pattern matches */
+	int	cogstate;	/* Current cognitive state */
+	int	cogpri;		/* Cognitive priority boost */
+	vlong	cogcycles;	/* Cycles spent in cognitive ops */
+	Lock;			/* Process cognitive lock */
+};
+
+/* Cognitive memory block header */
+struct CogMemBlock
+{
+	ulong	id;		/* Block identifier */
+	int	type;		/* Memory type (CogMemGeneral, etc.) */
+	ulong	size;		/* Block size */
+	short	importance;	/* Importance for GC */
+	CogMemBlock *next;	/* Free list link */
+	Lock;			/* Block lock */
+};
+
+/* Cognitive VM process state */
+struct CogProc
+{
+	Proc	*proc;		/* Associated kernel process */
+	CogProcExt *ext;	/* Cognitive extension */
+	int	pc;		/* Cognitive program counter */
+	ulong	*code;		/* Cognitive bytecode */
+	int	codelen;	/* Code length */
+	ulong	*stack;		/* Cognitive stack */
+	int	sp;		/* Stack pointer */
+	int	stacksize;	/* Stack size */
+	int	state;		/* VM state */
+	Lock;			/* VM lock */
+};
+
+/* Kernel-level Atom for cognitive AtomSpace */
+struct CogAtom
+{
+	ulong	id;		/* Unique kernel-wide ID */
+	int	type;		/* Atom type */
+	char	name[256];	/* Atom name (for nodes) */
+	CogAtom	**outgoing;	/* Outgoing atoms (for links) */
+	int	noutgoing;	/* Number of outgoing atoms */
+	float	tvstrength;	/* Truth value strength */
+	float	tvconf;		/* Truth value confidence */
+	short	sti;		/* Short-term importance */
+	short	lti;		/* Long-term importance */
+	short	vlti;		/* Very long-term importance */
+	ulong	refcount;	/* Reference count */
+	CogAtom	*hash;		/* Hash chain link */
+	Lock;			/* Atom lock */
+};
+
+/* Kernel AtomSpace */
+struct CogAtomSpace
+{
+	CogAtom	**atoms;	/* Atom array */
+	ulong	natoms;		/* Number of atoms */
+	ulong	maxatoms;	/* Maximum capacity */
+	CogAtom	**hash;		/* Hash table for lookup */
+	int	hashsize;	/* Hash table size */
+	ulong	nextid;		/* Next atom ID */
+	Lock;			/* AtomSpace lock */
+};
+
+/* Cognitive system call numbers */
+enum
+{
+	COGTHINK = 90,		/* Perform cognitive operation */
+	COGWAIT = 91,		/* Wait for cognitive event */
+	COGINFER = 92,		/* Trigger inference */
+	COGFOCUS = 93,		/* Set attentional focus */
+	COGSPREAD = 94,		/* Spread activation */
+};
+
+/* Cognitive VM opcodes */
+enum
+{
+	COGnop = 0,		/* No operation */
+	COGcreate,		/* Create atom */
+	COGlink,		/* Create link */
+	COGquery,		/* Query AtomSpace */
+	COGinfer,		/* Perform inference */
+	COGfocus,		/* Update attention */
+	COGspread,		/* Spread activation */
+	COGpattern,		/* Pattern match */
+	COGmine,		/* Mine patterns */
+	COGreason,		/* Symbolic reasoning */
+	COGlearn,		/* Learning operation */
+	COGhalt,		/* Halt VM */
+};
