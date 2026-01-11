@@ -70,3 +70,35 @@ Reasons:
 2. Create custom 9front disk image with cogplan9 extensions
 3. Build GitHub Pages site with v86 embedded
 4. Configure networking for 9P access
+
+
+## Disk Image Hosting Research (Updated)
+
+### v86 Library CDN Sources
+- **libv86.js**: `https://cdn.jsdelivr.net/npm/v86@latest/build/libv86.js`
+- **v86.wasm**: `https://cdn.jsdelivr.net/npm/v86@latest/build/v86.wasm`
+- **SeaBIOS**: `https://cdn.jsdelivr.net/gh/copy/v86@master/bios/seabios.bin`
+- **VGA BIOS**: `https://cdn.jsdelivr.net/gh/copy/v86@master/bios/vgabios.bin`
+
+### Disk Image Challenge
+The official v86 demo uses a private CDN (`v86-user-images.b-cdn.net`) that is not publicly accessible.
+
+### Options for 9front Disk Image
+
+1. **Official 9front ISO** (http://9front.org/iso/)
+   - Latest: `9front-11321.386.iso.gz` (~232 MB compressed)
+   - Too large for browser download without preprocessing
+
+2. **Self-hosted compressed image**
+   - Create a minimal 9front installation
+   - Compress with zstd for async loading
+   - Host on GitHub releases or CDN
+
+3. **Use saved state**
+   - v86 supports loading saved states
+   - Pre-boot 9front and save state
+   - Much faster startup time
+
+### Current Solution
+Using a minimal Linux image (Buildroot) as a fallback while we prepare a proper 9front image.
+The simonw/tools example uses: `https://cdn.jsdelivr.net/gh/nicholasadamou/v86@latest/images/linux.iso`
