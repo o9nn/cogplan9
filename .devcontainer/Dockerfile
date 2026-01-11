@@ -7,15 +7,14 @@ FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Fix Ubuntu GPG key issues in Docker builds
-# The ubuntu-keyring package needs to be updated first to get the latest signing keys
+# Import the missing Ubuntu archive signing key before any apt operations
 RUN apt-get update 2>/dev/null || true && \
-    apt-get install -y --allow-unauthenticated ca-certificates gnupg && \
+    apt-get install -y --allow-unauthenticated ca-certificates gnupg curl && \
     apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 871920D1991BC93C && \
     apt-get update && \
     apt-get install -y \
     build-essential \
     git \
-    curl \
     wget \
     vim \
     nano \
@@ -69,8 +68,9 @@ exec $PLAN9/bin/mk "$@"' > /usr/local/bin/mk && \
     chmod +x /usr/local/bin/mk
 
 # Install GitHub CLI for GitHub integration
-# Use separate apt-get update to avoid issues with stale package lists
-RUN mkdir -p -m 755 /etc/apt/keyrings && \
+# Re-import the GPG key and update before installing gh
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 871920D1991BC93C && \
+    mkdir -p -m 755 /etc/apt/keyrings && \
     curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null && \
     chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg && \
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null && \
