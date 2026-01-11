@@ -166,30 +166,18 @@ struct AttentionValue {
 - Cognitive memory management
 - Documentation suite
 - CI/CD pipeline
+- **Phase 2A: Kernel Header Integration** (COMPLETE)
+  - portdat.h: Added CogProcExt, CogMemBlock, CogProc, CogAtom, CogAtomSpace types
+  - portdat.h: Extended Proc structure with cogext and atomid fields
+  - portfns.h: Added 50+ cognitive function declarations
+  - master.local: Registered cognitive device (#Σ)
+- **Phase 2B: Kernel Initialization** (COMPLETE)
+  - main.c: Added cognitive subsystem initialization calls
+  - main.c: Added cogdecay background kproc
+  - proc.c: Cognitive extension allocation in newproc()
+  - proc.c: Cognitive cleanup in pexit()
 
-### Next Phase: Kernel Integration (Active Development)
-
-#### Phase 2A: Kernel Header Integration (Priority: High)
-1. **Modify `sys/src/9/port/portdat.h`**
-   - Add `CogProcExt`, `CogMemBlock`, `CogProc` type definitions
-   - Extend `Proc` structure with cognitive fields (`cogext`, `atomid`)
-
-2. **Modify `sys/src/9/port/portfns.h`**
-   - Add cognitive VM function declarations (`cogvminit`, `cogproccreate`, etc.)
-   - Add cognitive process function declarations
-   - Add cognitive memory function declarations
-
-3. **Update device table (`sys/src/9/pc/devs`)**
-   - Register `cog` device for `#Σ/` access
-
-#### Phase 2B: Kernel Initialization (Priority: High)
-4. **Modify `sys/src/9/port/main.c`**
-   - Add `cogmeminit()`, `cogprocinit()`, `cogvminit()` calls
-
-5. **Modify `sys/src/9/port/proc.c`**
-   - Add cognitive extension allocation in `newproc()`
-   - Add cognitive cleanup in `pexit()`
-   - Add cognitive decay background process
+### Next Phase: Scheduler Integration (Active Development)
 
 #### Phase 2C: Scheduler Integration (Priority: Medium)
 6. **Enhance scheduler in `proc.c`**
