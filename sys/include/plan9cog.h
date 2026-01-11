@@ -21,6 +21,7 @@
 #include <plan9cog/atomspace.h>		/* Hypergraph knowledge representation */
 #include <plan9cog/pln.h>		/* Probabilistic Logic Networks */
 #include <plan9cog/cogvm.h>		/* Cognitive VM extensions */
+#include <plan9cog/tensorlogic.h>	/* Tensor Logic reasoning */
 
 /* Plan9Cog System */
 typedef struct Plan9Cog Plan9Cog;

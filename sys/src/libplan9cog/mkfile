@@ -6,6 +6,7 @@ OFILES=\
 	ecan.$O\
 	machspace.$O\
 	reactor.$O\
+	patternmine.$O\
 
 HFILES=/sys/include/plan9cog.h
 
