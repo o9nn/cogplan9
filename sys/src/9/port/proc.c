@@ -491,14 +491,15 @@ another:
 
 /*
  *  pick a process to run
+ *  Enhanced with cognitive priority scheduling
  */
 Proc*
 runproc(void)
 {
 	Schedq *rq;
-	Proc *p;
+	Proc *p, *bestp;
 	ulong start, now;
-	int i;
+	int i, bestpri;
 	void (*pt)(Proc*, int, vlong);
 
 	start = perfticks();
@@ -519,19 +520,38 @@ loop:
 	 *  find a process that last ran on this processor (affinity),
 	 *  or one that hasn't moved in a while (load balancing).  Every
 	 *  time around the loop affinity goes down.
+	 *
+	 *  Cognitive enhancement: within each priority queue, prefer
+	 *  processes with higher STI (Short-Term Importance) values.
 	 */
 	spllo();
 	for(i = 0;; i++){
 		/*
 		 *  find the highest priority target process that this
 		 *  processor can run given affinity constraints.
-		 *
+		 *  Cognitive: track best STI process within queue.
 		 */
+		bestp = nil;
+		bestpri = -32768;
 		for(rq = &runq[Nrq-1]; rq >= runq; rq--){
 			for(p = rq->head; p; p = p->rnext){
 				if(p->mp == nil || p->mp == MACHP(m->machno)
-				|| (!p->wired && i > 0))
-					goto found;
+				|| (!p->wired && i > 0)){
+					/*
+					 * Cognitive priority boost:
+					 * Check if this process has higher cognitive importance
+					 */
+					if(p->cogext != nil && p->cogext->sti > bestpri){
+						bestp = p;
+						bestpri = p->cogext->sti;
+					} else if(bestp == nil){
+						bestp = p;
+					}
+				}
+			}
+			if(bestp != nil){
+				p = bestp;
+				goto found;
 			}
 		}
 
@@ -552,6 +572,13 @@ found:
 
 	p->state = Scheding;
 	p->mp = MACHP(m->machno);
+
+	/*
+	 * Cognitive scheduling: update cognitive state
+	 */
+	if(p->cogext != nil){
+		p->cogext->cogstate = CogThinking;
+	}
 
 	if(edflock(p)){
 		edfrun(p, rq == &runq[PriEdf]);	/* start deadline timer and do admin */
@@ -677,6 +704,24 @@ newproc(void)
 	p->cpu = 0;
 	p->lastupdate = MACHP(0)->ticks*Scaling;
 	p->edf = nil;
+
+	/*
+	 * Cognitive kernel extensions
+	 * Allocate cognitive process extension for each new process
+	 */
+	p->cogext = cogprocalloc();
+	if(p->cogext != nil){
+		p->cogext->atomid = 0;
+		p->cogext->sti = 0;
+		p->cogext->lti = 0;
+		p->cogext->vlti = 0;
+		p->cogext->inferences = 0;
+		p->cogext->patterns = 0;
+		p->cogext->cogstate = CogIdle;
+		p->cogext->cogpri = 0;
+		p->cogext->cogcycles = 0;
+	}
+	p->atomid = 0;
 
 	return p;
 }
@@ -1075,6 +1120,16 @@ pexit(char *exitstr, int freemem)
 	up->alarm = 0;
 	if (up->tt)
 		timerdel(up);
+
+	/*
+	 * Free cognitive process extension
+	 */
+	if(up->cogext != nil){
+		cogprocextfree(up->cogext);
+		up->cogext = nil;
+	}
+	up->atomid = 0;
+
 	pt = proctrace;
 	if(pt)
 		pt(up, SDead, 0);
