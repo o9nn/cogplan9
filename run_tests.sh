@@ -50,7 +50,7 @@ echo ""
 
 # Check header files exist
 echo "Header Files:"
-for f in atomspace.h pln.h cogvm.h; do
+for f in atomspace.h pln.h cogvm.h tensorlogic.h; do
     if [ -f "sys/include/plan9cog/$f" ]; then
         test_pass "$f exists"
     else
@@ -100,6 +100,17 @@ for f in plan9cog.c ecan.c machspace.c reactor.c patternmine.c; do
     fi
 done
 
+# Check libtensorlogic
+echo ""
+echo "libtensorlogic:"
+for f in tensor.c einsum.c nonlinear.c logic.c embedding.c kernel.c graphmodel.c plnintegration.c; do
+    if [ -f "sys/src/libtensorlogic/$f" ]; then
+        test_pass "$f exists"
+    else
+        test_fail "$f missing"
+    fi
+done
+
 echo ""
 echo "=== Checking Test Files ==="
 echo ""
@@ -115,12 +126,22 @@ for f in test_atomspace.c test_pln.c test_ecan.c test_ure.c test_machspace.c tes
 done
 
 echo ""
+echo "Tensor Logic Tests:"
+for f in test_tensor.c test_einsum.c test_tensorlogic.c test_embedding.c test_kernel.c test_graphmodel.c; do
+    if [ -f "sys/src/test/$f" ]; then
+        test_pass "$f exists"
+    else
+        test_fail "$f missing"
+    fi
+done
+
+echo ""
 echo "=== Checking mkfiles ==="
 echo ""
 
 # Check mkfiles
 echo "Build Files:"
-for d in libatomspace libpln libplan9cog; do
+for d in libatomspace libpln libplan9cog libtensorlogic; do
     if [ -f "sys/src/$d/mkfile" ]; then
         test_pass "sys/src/$d/mkfile exists"
     else
@@ -142,10 +163,11 @@ echo ""
 echo "Checking for incomplete implementations (TODO markers):"
 
 todo_count=0
-for f in sys/src/libatomspace/*.c sys/src/libpln/*.c sys/src/libplan9cog/*.c; do
+for f in sys/src/libatomspace/*.c sys/src/libpln/*.c sys/src/libplan9cog/*.c sys/src/libtensorlogic/*.c; do
     if [ -f "$f" ]; then
         count=$(grep -c "TODO" "$f" 2>/dev/null || echo 0)
-        if [ "$count" -gt 0 ]; then
+        count=${count:-0}
+        if [ "$count" -gt 0 ] 2>/dev/null; then
             echo "  $f: $count TODO(s) remaining"
             todo_count=$((todo_count + count))
         fi
@@ -166,7 +188,7 @@ echo ""
 echo "Code Statistics:"
 total_loc=0
 
-for dir in sys/src/libatomspace sys/src/libpln sys/src/libplan9cog; do
+for dir in sys/src/libatomspace sys/src/libpln sys/src/libplan9cog sys/src/libtensorlogic; do
     if [ -d "$dir" ]; then
         loc=$(wc -l $dir/*.c 2>/dev/null | tail -1 | awk '{print $1}')
         loc=${loc:-0}
@@ -191,7 +213,7 @@ echo ""
 
 # Count function declarations in headers
 echo "API Functions:"
-for h in sys/include/plan9cog/atomspace.h sys/include/plan9cog/pln.h sys/include/plan9cog.h; do
+for h in sys/include/plan9cog/atomspace.h sys/include/plan9cog/pln.h sys/include/plan9cog/tensorlogic.h sys/include/plan9cog.h; do
     if [ -f "$h" ]; then
         funcs=$(grep -E "^[a-zA-Z].*\(" "$h" 2>/dev/null | wc -l)
         echo "  $(basename $h): ~$funcs function declarations"

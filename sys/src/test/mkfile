@@ -8,12 +8,19 @@ TARG=\
 	test_machspace\
 	test_pattern\
 	test_integration\
+	test_tensor\
+	test_einsum\
+	test_tensorlogic\
+	test_embedding\
+	test_kernel\
+	test_graphmodel\
 
 HFILES=\
 	/sys/include/plan9cog.h\
 	/sys/include/plan9cog/atomspace.h\
 	/sys/include/plan9cog/pln.h\
 	/sys/include/plan9cog/cogvm.h\
+	/sys/include/plan9cog/tensorlogic.h\
 
 OFILES=
 
