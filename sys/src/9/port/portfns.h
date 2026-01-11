@@ -471,6 +471,25 @@ int		syscoginfer(int, ulong*, int);
 int		syscogfocus(ulong);
 int		syscogspread(ulong, short);
 
+/* Tensor Logic Functions */
+void		cogtensorinit(void);
+Tensor*		cogtensornew(int, int, int*);
+void		cogtensordel(Tensor*);
+float		cogtensorgetf(Tensor*, int*);
+void		cogtensorsetf(Tensor*, int*, float);
+Tensor*		tensoreinsum(char*, Tensor**, int);
+float		tensortv(Tensor*, Tensor*);
+Tensor*		tensorembed(char*);
+Tensor*		tensorimply(Tensor*, Tensor*);
+float		tensordeduction(Tensor*, Tensor*);
+void		tensorsoftmax(Tensor*);
+Tensor*		tensorattention(Tensor*, Tensor*, Tensor*);
+void		tensor2tv(Tensor*, float*, float*);
+void		cogtensorstats(int*, int*, ulong*);
+
+/* Cognitive Unit Tests */
+void		runcognitvetests(void);
+
 #pragma varargck argpos iprint	1
 #pragma	varargck argpos	panic	1
 #pragma varargck argpos pprint	1

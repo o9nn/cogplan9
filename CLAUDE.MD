@@ -176,22 +176,31 @@ struct AttentionValue {
   - main.c: Added cogdecay background kproc
   - proc.c: Cognitive extension allocation in newproc()
   - proc.c: Cognitive cleanup in pexit()
+- **Phase 2C: Scheduler Integration** (COMPLETE)
+  - proc.c: Enhanced runproc() with cognitive priority (STI-based)
+  - proc.c: Cognitive state tracking in scheduler
+  - proc.c: Attention-based process selection within priority queues
+- **Tensor Logic Integration** (COMPLETE)
+  - cogtensor.c: Tensor data structures for kernel-level reasoning
+  - cogtensor.c: Einstein summation (tensoreinsum) operations
+  - cogtensor.c: Symbol embedding (tensorembed) for neural-symbolic AI
+  - cogtensor.c: Tensor-based truth value computation (tensortv)
+  - cogtensor.c: Attention mechanism (tensorattention)
+  - Based on tensor-logic.org: unifying deep learning with symbolic AI
+- **Unit Tests** (COMPLETE)
+  - cogtest.c: Comprehensive unit tests for all cognitive modules
+  - test-cognitive-build.sh: Build validation script (59 tests, all passing)
 
-### Next Phase: Scheduler Integration (Active Development)
+### Next Phase: System Calls & Validation
 
-#### Phase 2C: Scheduler Integration (Priority: Medium)
-6. **Enhance scheduler in `proc.c`**
-   - Integrate cognitive priority into `runproc()`
-   - Add attention-based scheduling adjustments
+#### Phase 2D: System Calls (Priority: Medium)
+- Add cognitive system call handlers to `syscall.c`
+- Implement `COGTHINK`, `COGWAIT`, `COGINFER`, `COGFOCUS`, `COGSPREAD`
 
-7. **Add cognitive system calls**
-   - `COGTHINK`, `COGWAIT`, `COGINFER`, `COGFOCUS`, `COGSPREAD`
-   - Add handlers to `syscall.c`
-
-#### Phase 2D: Testing & Validation (Priority: High)
-8. **Create kernel module unit tests**
-9. **Build and boot test the cognitive kernel**
-10. **Performance benchmarking**
+#### Phase 2E: Full Validation (Priority: High)
+- Kernel boot testing
+- Performance benchmarking
+- Integration testing
 
 See `KERNEL_INTEGRATION_GUIDE.md` for detailed implementation steps.
 

@@ -162,6 +162,7 @@ main(void)
 	cogatomspaceinit();	/* Kernel AtomSpace */
 	cogplninit();		/* PLN inference engine */
 	cogecaninit();		/* ECAN attention allocation */
+	cogtensorinit();	/* Tensor logic subsystem */
 	print("cognitive kernel initialized\n");
 
 	if(delaylink){

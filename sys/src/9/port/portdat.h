@@ -58,6 +58,11 @@ typedef struct CogProc CogProc;
 typedef struct CogAtom CogAtom;
 typedef struct CogAtomSpace CogAtomSpace;
 
+/* Tensor logic extensions */
+typedef struct Tensor Tensor;
+typedef struct TensorEq TensorEq;
+typedef struct EmbedSpace EmbedSpace;
+
 #pragma incomplete DevConf
 #pragma incomplete Edf
 #pragma incomplete Mntcache
