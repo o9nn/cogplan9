@@ -482,6 +482,143 @@ else
 fi
 
 echo ""
+echo "=== Sprint 5: Temporal Reasoning ==="
+
+TEMPORAL_LIB="sys/src/libplan9cog/temporal.c"
+TEMPORAL_H="sys/include/plan9cog/temporal.h"
+TEMPORAL_FS="sys/src/cmd/temporalfs/temporalfs.c"
+TEMPORAL_MK="sys/src/cmd/temporalfs/mkfile"
+
+if [ -f "$TEMPORAL_H" ]; then
+    log_pass "$TEMPORAL_H: temporal header exists"
+else
+    log_fail "$TEMPORAL_H: temporal header missing"
+fi
+
+if [ -f "$TEMPORAL_LIB" ]; then
+    log_pass "$TEMPORAL_LIB: temporal library exists"
+else
+    log_fail "$TEMPORAL_LIB: temporal library missing"
+fi
+
+if grep -q "TemporalSpace" "$TEMPORAL_H" 2>/dev/null; then
+    log_pass "$TEMPORAL_H: TemporalSpace type defined"
+else
+    log_fail "$TEMPORAL_H: TemporalSpace type missing"
+fi
+
+if grep -q "temporalinit" "$TEMPORAL_LIB" 2>/dev/null; then
+    log_pass "$TEMPORAL_LIB: temporalinit function found"
+else
+    log_fail "$TEMPORAL_LIB: temporalinit function missing"
+fi
+
+if grep -q "temporalsnap" "$TEMPORAL_LIB" 2>/dev/null; then
+    log_pass "$TEMPORAL_LIB: temporalsnap function found"
+else
+    log_fail "$TEMPORAL_LIB: temporalsnap function missing"
+fi
+
+if grep -q "temporalrelation" "$TEMPORAL_LIB" 2>/dev/null; then
+    log_pass "$TEMPORAL_LIB: Allen interval relations found"
+else
+    log_fail "$TEMPORAL_LIB: Allen interval relations missing"
+fi
+
+if grep -q "temporal" "sys/src/libplan9cog/mkfile" 2>/dev/null; then
+    log_pass "libplan9cog/mkfile: temporal.c included in build"
+else
+    log_fail "libplan9cog/mkfile: temporal.c not included in build"
+fi
+
+if [ -f "$TEMPORAL_FS" ]; then
+    log_pass "$TEMPORAL_FS: temporalfs file server exists"
+else
+    log_fail "$TEMPORAL_FS: temporalfs file server missing"
+fi
+
+if [ -f "$TEMPORAL_MK" ]; then
+    log_pass "$TEMPORAL_MK: temporalfs mkfile exists"
+else
+    log_fail "$TEMPORAL_MK: temporalfs mkfile missing"
+fi
+
+if grep -q "threadpostmountsrv" "$TEMPORAL_FS" 2>/dev/null; then
+    log_pass "$TEMPORAL_FS: 9P server mount found"
+else
+    log_fail "$TEMPORAL_FS: 9P server mount missing"
+fi
+
+if grep -q "temporalinit" "$TEMPORAL_FS" 2>/dev/null; then
+    log_pass "$TEMPORAL_FS: temporalinit called in server"
+else
+    log_fail "$TEMPORAL_FS: temporalinit not called in server"
+fi
+
+if grep -q "Qsnap" "$TEMPORAL_FS" 2>/dev/null; then
+    log_pass "$TEMPORAL_FS: snapshot namespace defined"
+else
+    log_fail "$TEMPORAL_FS: snapshot namespace missing"
+fi
+
+if grep -q "Qhistory" "$TEMPORAL_FS" 2>/dev/null; then
+    log_pass "$TEMPORAL_FS: history namespace defined"
+else
+    log_fail "$TEMPORAL_FS: history namespace missing"
+fi
+
+if grep -q "writeprune" "$TEMPORAL_FS" 2>/dev/null; then
+    log_pass "$TEMPORAL_FS: prune control found"
+else
+    log_fail "$TEMPORAL_FS: prune control missing"
+fi
+
+# Syntax check on temporal files
+if command -v gcc >/dev/null 2>&1; then
+    if gcc -fsyntax-only -w -x c \
+        -D"ulong=unsigned long" \
+        -D"vlong=long long" \
+        -D"uchar=unsigned char" \
+        -D"ushort=unsigned short" \
+        -D"uint=unsigned int" \
+        -D"schar=signed char" \
+        -D"lock(x)=" \
+        -D"unlock(x)=" \
+        -D"mallocz(s,z)=calloc(1,s)" \
+        -D"emalloc9p(s)=calloc(1,s)" \
+        -D"estrdup9p(s)=strdup(s)" \
+        -D"USED(x)=(void)(x)" \
+        -include /usr/include/stdlib.h \
+        -include /usr/include/string.h \
+        "$TEMPORAL_LIB" 2>/dev/null; then
+        log_pass "$TEMPORAL_LIB: C syntax check passed"
+    else
+        log_warn "$TEMPORAL_LIB: C syntax check (Plan 9 types expected)"
+    fi
+
+    if gcc -fsyntax-only -w -x c \
+        -D"ulong=unsigned long" \
+        -D"vlong=long long" \
+        -D"uchar=unsigned char" \
+        -D"ushort=unsigned short" \
+        -D"uint=unsigned int" \
+        -D"schar=signed char" \
+        -D"lock(x)=" \
+        -D"unlock(x)=" \
+        -D"mallocz(s,z)=calloc(1,s)" \
+        -D"emalloc9p(s)=calloc(1,s)" \
+        -D"estrdup9p(s)=strdup(s)" \
+        -D"USED(x)=(void)(x)" \
+        -include /usr/include/stdlib.h \
+        -include /usr/include/string.h \
+        "$TEMPORAL_FS" 2>/dev/null; then
+        log_pass "$TEMPORAL_FS: C syntax check passed"
+    else
+        log_warn "$TEMPORAL_FS: C syntax check (Plan 9 types expected)"
+    fi
+fi
+
+echo ""
 echo "=== Build Test Summary ==="
 echo -e "Passed: ${GREEN}$PASS_COUNT${NC}"
 echo -e "Failed: ${RED}$FAIL_COUNT${NC}"
