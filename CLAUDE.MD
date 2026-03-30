@@ -189,6 +189,15 @@ struct AttentionValue {
   - Based on tensor-logic.org: unifying deep learning with symbolic AI
 - **Unit Tests** (COMPLETE)
   - cogtest.c: Comprehensive unit tests for all cognitive modules
+  - test-cognitive-build.sh: Build validation script (59 tests, all passing)
+
+### Next Phase: System Calls & Validation
+
+- **Phase 2D: System Calls** (COMPLETE)
+  - sys.h: Added COGTHINK=90, COGWAIT=91, COGINFER=92, COGFOCUS=93, COGSPREAD=94 syscall numbers
+  - cogvm.c: Implemented syscoginfer, syscogfocus, syscogspread kernel helpers
+  - sysproc.c: Added sys_cogthink, sys_cogwait, sys_coginfer, sys_cogfocus, sys_cogspread handlers
+  - systab.h: Registered all 5 cognitive syscalls in dispatch table and name table
   - test-cognitive-build.sh: Build validation script (76 tests, all passing)
 - **Phase 2D: System Calls** (COMPLETE)
   - syscog.c: Cognitive system call implementations

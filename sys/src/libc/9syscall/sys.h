@@ -50,6 +50,11 @@
 #define	PWRITE		51
 #define	TSEMACQUIRE	52
 #define NSEC		53
+#define	COGTHINK	90
+#define	COGWAIT		91
+#define	COGINFER	92
+#define	COGFOCUS	93
+#define	COGSPREAD	94
 
 /* Cognitive system calls */
 #define COGTHINK	90

@@ -55,6 +55,11 @@ Syscall syspwrite;
 Syscall systsemacquire;
 Syscall sysnsec;
 Syscall	sysdeath;
+Syscall	sys_cogthink;
+Syscall	sys_cogwait;
+Syscall	sys_coginfer;
+Syscall	sys_cogfocus;
+Syscall	sys_cogspread;
 
 /* Cognitive system calls */
 Syscall syscogthink;
@@ -116,6 +121,11 @@ Syscall *systab[]={
 	[PWRITE]	syspwrite,
 	[TSEMACQUIRE]	systsemacquire,
 	[NSEC]		sysnsec,
+	[COGTHINK]	sys_cogthink,
+	[COGWAIT]	sys_cogwait,
+	[COGINFER]	sys_coginfer,
+	[COGFOCUS]	sys_cogfocus,
+	[COGSPREAD]	sys_cogspread,
 	/* Cognitive system calls */
 	[COGTHINK]	syscogthink,
 	[COGWAIT]	syscogwait,
