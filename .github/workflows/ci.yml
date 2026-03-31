@@ -11,7 +11,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
     - uses: actions/checkout@v3
@@ -27,21 +27,24 @@ jobs:
       run: |
         brew install cmake
 
+    - name: Install dependencies (Windows)
+      if: matrix.os == 'windows-latest'
+      run: choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
+
     - name: Configure CMake
       run: cmake -B build -DCMAKE_BUILD_TYPE=Debug
 
     - name: Build
-      run: cmake --build build
+      run: cmake --build build --config Debug
 
     - name: Run Unit Tests
-      run: |
-        ./build/tests/unit/test_atomspace
-        ./build/tests/unit/test_pln
+      run: ctest --test-dir build -C Debug -R "test_atomspace|test_pln" --output-on-failure
 
     - name: Run API Tests
-      run: ./build/tests/api/test_plan9cog_api
+      run: ctest --test-dir build -C Debug -R "test_plan9cog_api" --output-on-failure
 
     - name: Run CLI Tests
+      if: runner.os != 'Windows'
       run: |
         chmod +x tests/cli/test_cogctl.sh
         chmod +x tests/cli/test_cogfs.sh
@@ -49,6 +52,7 @@ jobs:
         ./tests/cli/test_cogfs.sh
 
     - name: Run E2E Tests
+      if: runner.os != 'Windows'
       run: |
         chmod +x tests/e2e/test_full_workflow.sh
         ./tests/e2e/test_full_workflow.sh
