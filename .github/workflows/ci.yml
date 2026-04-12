@@ -10,11 +10,26 @@ jobs:
   build-and-test:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
-    - uses: actions/checkout@v3
+    # Full checkout for non-Windows platforms
+    - uses: actions/checkout@v4
+      if: matrix.os != 'windows-latest'
+
+    # Sparse checkout on Windows to avoid reserved filenames (aux, con)
+    # in the Plan 9 source tree that NTFS cannot represent
+    - uses: actions/checkout@v4
+      if: matrix.os == 'windows-latest'
+      with:
+        sparse-checkout: |
+          CMakeLists.txt
+          include
+          test
+          tests
+          .github
 
     - name: Install dependencies (Ubuntu)
       if: matrix.os == 'ubuntu-latest'
@@ -37,11 +52,8 @@ jobs:
     - name: Build
       run: cmake --build build --config Debug
 
-    - name: Run Unit Tests
-      run: ctest --test-dir build -C Debug -R "test_atomspace|test_pln" --output-on-failure
-
-    - name: Run API Tests
-      run: ctest --test-dir build -C Debug -R "test_plan9cog_api" --output-on-failure
+    - name: Run Tests
+      run: ctest --test-dir build -C Debug --output-on-failure
 
     - name: Run CLI Tests
       if: runner.os != 'Windows'
