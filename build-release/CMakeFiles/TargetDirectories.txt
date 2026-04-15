@@ -1,0 +1,8 @@
+/home/runner/work/cogplan9/cogplan9/build-release/CMakeFiles/test_all.dir
+/home/runner/work/cogplan9/cogplan9/build-release/CMakeFiles/test.dir
+/home/runner/work/cogplan9/cogplan9/build-release/CMakeFiles/edit_cache.dir
+/home/runner/work/cogplan9/cogplan9/build-release/CMakeFiles/rebuild_cache.dir
+/home/runner/work/cogplan9/cogplan9/build-release/CMakeFiles/list_install_components.dir
+/home/runner/work/cogplan9/cogplan9/build-release/CMakeFiles/install.dir
+/home/runner/work/cogplan9/cogplan9/build-release/CMakeFiles/install/local.dir
+/home/runner/work/cogplan9/cogplan9/build-release/CMakeFiles/install/strip.dir

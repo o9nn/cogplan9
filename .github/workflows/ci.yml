@@ -2,75 +2,97 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
-  build-and-test:
+  cmake-build-and-unit:
+    name: CMake build + unit tests (${{ matrix.os }}, ${{ matrix.build_type }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
+        build_type: [Debug, Release]
 
     steps:
-    # Full checkout for non-Windows platforms
-    - uses: actions/checkout@v4
-      if: matrix.os != 'windows-latest'
+      # Full checkout for non-Windows platforms
+      - uses: actions/checkout@v4
+        if: matrix.os != 'windows-latest'
 
-    # On Windows the Plan 9 source tree contains directories named "aux"
-    # and "con" which are reserved on NTFS.  Disable the NTFS-reserved-name
-    # check so git can populate the index, then use sparse checkout to
-    # avoid actually writing those paths to disk.
-    - name: Allow reserved NTFS paths in index (Windows)
-      if: matrix.os == 'windows-latest'
-      run: git config --global core.protectNTFS false
+      # On Windows the Plan 9 source tree contains directories named "aux"
+      # and "con" which are reserved on NTFS. Disable the NTFS-reserved-name
+      # check so git can populate the index, then use sparse checkout to
+      # avoid actually writing those paths to disk.
+      - name: Allow reserved NTFS paths in index (Windows)
+        if: matrix.os == 'windows-latest'
+        run: git config --global core.protectNTFS false
 
-    - uses: actions/checkout@v4
-      if: matrix.os == 'windows-latest'
-      with:
-        sparse-checkout: |
-          CMakeLists.txt
-          include
-          test
-          tests
-          .github
+      - uses: actions/checkout@v4
+        if: matrix.os == 'windows-latest'
+        with:
+          sparse-checkout: |
+            CMakeLists.txt
+            include
+            test
+            tests
+            .github
 
-    - name: Install dependencies (Ubuntu)
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y build-essential cmake
+      - name: Install dependencies (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake
 
-    - name: Install dependencies (macOS)
-      if: matrix.os == 'macos-latest'
-      run: |
-        brew install cmake
+      - name: Install dependencies (macOS)
+        if: matrix.os == 'macos-latest'
+        run: brew install cmake
 
-    - name: Install dependencies (Windows)
-      if: matrix.os == 'windows-latest'
-      run: choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
+      - name: Install dependencies (Windows)
+        if: matrix.os == 'windows-latest'
+        run: choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
 
-    - name: Configure CMake
-      run: cmake -B build -DCMAKE_BUILD_TYPE=Debug
+      - name: Configure CMake
+        run: cmake -B build -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
 
-    - name: Build
-      run: cmake --build build --config Debug
+      - name: Build
+        run: cmake --build build --config ${{ matrix.build_type }}
 
-    - name: Run Tests
-      run: ctest --test-dir build -C Debug --output-on-failure
+      - name: Run CTest unit suite
+        run: ctest --test-dir build -C ${{ matrix.build_type }} --output-on-failure
 
-    - name: Run CLI Tests
-      if: runner.os != 'Windows'
-      run: |
-        chmod +x tests/cli/test_cogctl.sh
-        chmod +x tests/cli/test_cogfs.sh
-        ./tests/cli/test_cogctl.sh
-        ./tests/cli/test_cogfs.sh
+  plan9cog-validation:
+    name: Plan9Cog integration/build validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-    - name: Run E2E Tests
-      if: runner.os != 'Windows'
-      run: |
-        chmod +x tests/e2e/test_full_workflow.sh
-        ./tests/e2e/test_full_workflow.sh
+      - name: Make validation scripts executable
+        run: chmod +x test-plan9cog.sh test-cognitive-build.sh run_tests.sh
+
+      - name: Run integration checks
+        run: ./test-plan9cog.sh
+
+      - name: Run cognitive build checks
+        run: ./test-cognitive-build.sh
+
+      - name: Run comprehensive repository checks
+        run: ./run_tests.sh
+
+  cli-e2e-tests:
+    name: CLI + E2E shell tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Make shell tests executable
+        run: chmod +x tests/cli/test_cogctl.sh tests/cli/test_cogfs.sh tests/e2e/test_full_workflow.sh
+
+      - name: Run CLI tests
+        run: |
+          ./tests/cli/test_cogctl.sh
+          ./tests/cli/test_cogfs.sh
+
+      - name: Run E2E workflow tests
+        run: ./tests/e2e/test_full_workflow.sh
