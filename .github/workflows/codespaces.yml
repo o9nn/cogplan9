@@ -59,7 +59,7 @@ jobs:
       
       - name: Test prebuild image
         run: |
-          IMAGE_TAG="ghcr.io/${{ github.repository }}/devcontainer:${{ github.sha }}"
+          IMAGE_TAG="ghcr.io/${{ github.repository }}/devcontainer:${{ steps.meta.outputs.version }}"
           echo "Testing image: $IMAGE_TAG"
           
           docker run --rm $IMAGE_TAG bash -c '
