@@ -58,6 +58,7 @@ Desktop.ini
 
 # Build directories (if using mk outside Plan 9)
 /build/
+/build-*/
 /out/
 
 # Test output
@@ -79,8 +80,9 @@ test-results/
 *.rej
 
 # Core dumps
-core
-core.*
+/core
+!/include/cog/core/
+/core.*
 *.core
 
 # Package managers (if any)
